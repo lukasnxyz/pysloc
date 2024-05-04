@@ -1,7 +1,7 @@
 ### pysloc
 An easy way to visualize a git repository's commit log.
 
-![chart example]()
+<!-- ![chart example](example.png) -->
 
 Full credit for the idea comes from [lesshero by kaihendry](https://github.com/kaihendry/lesshero),
 go check it out!

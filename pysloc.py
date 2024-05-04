@@ -1,8 +1,8 @@
 #!/usr/bin/python3
-
 from pygit2 import Repository, Signature
 from pygit2.enums import SortMode
 from datetime import datetime, timezone, timedelta
+from argparse import ArgumentParser
 
 class Commit:
     def __init__(self, msg: str, author: Signature, commit_hash: str):
@@ -38,17 +38,20 @@ class Repo:
         return f"Name: {self.name}\nPath: '{self.path}'\nCommits: {len(self.commits)}"
 
 def main():
-    # handle cli flags here
+    arg_parser = ArgumentParser()
+    arg_parser.add_argument("-d", "--directory", help="Specify directory containing git project")
+    args = arg_parser.parse_args()
 
-    pygit_repo = Repository(".git")
-    repo = Repo("pysloc", ".")
+    pygit_repo = Repository(args.directory)
+    repo = Repo("pysloc", args.directory)
 
+    # handle this in Repo constructor?
     for commit in pygit_repo.walk(pygit_repo.head.target, SortMode.TOPOLOGICAL | SortMode.REVERSE):
         repo.append_commit(Commit(
             commit.message, 
             commit.author, 
-            commit.hex)
-        )
+            commit.hex
+        ))
 
     repo.log()
     print(repo)

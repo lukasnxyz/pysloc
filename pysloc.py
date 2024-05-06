@@ -1,7 +1,5 @@
 #!/usr/bin/python3
 
-# usefule for pygit2: https://davidfischer.name/2013/06/getting-started-with-pygit2/
-
 from pygit2 import Repository, Signature, Patch
 from pygit2.enums import SortMode
 from datetime import datetime, timezone, timedelta
@@ -57,27 +55,25 @@ def main():
     repo = Repo("pysloc", args.directory)
 
     pygit_repo_commits = []
-    for commit in pygit_repo.walk(pygit_repo.head.target, SortMode.TOPOLOGICAL):
+    for commit in pygit_repo.walk(pygit_repo.head.target, SortMode.TOPOLOGICAL | SortMode.REVERSE):
         pygit_repo_commits.append(commit)
 
-    #for i, commit in enumerate(pygit_repo.walk(pygit_repo.head.target, SortMode.TOPOLOGICAL | SortMode.REVERSE)):
     for commit, next_commit in zip(pygit_repo_commits, pygit_repo_commits[1:]+[pygit_repo_commits[0]]):
-        # handle last commit error here
+        # for initial commit here, it doesn't go from 0
         diff = pygit_repo.diff(commit, next_commit, context_lines=0, interhunk_lines=0) 
 
         sloc_added = 0
         sloc_removed = 0
 
-        # I think sloc_added and sloc_removed are mixed up?
         for obj in diff:
             if type(obj) == Patch:
                 for hunk in obj.hunks:
                     for line in hunk.lines:
                         if line.new_lineno == -1: 
-                            sloc_removed -= 1
+                            sloc_added +=1
                             #print(f"[{Fore.RED}removal line {line.old_lineno}{Fore.RESET}] {line.content.strip()}")
                         if line.old_lineno == -1: 
-                            sloc_added +=1
+                            sloc_removed += 1
                             #print(f"[{Fore.GREEN}addition line {line.new_lineno}{Fore.RESET}] {line.content.strip()}")  
 
         repo.append_commit(Commit(

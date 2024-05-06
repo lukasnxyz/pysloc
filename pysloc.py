@@ -23,7 +23,7 @@ class Commit:
         self.sloc_diff = abs(self.sloc_added - self.sloc_removed)
 
     def __repr__(self):
-        return f"commit {self.commit_hash}\nAuthor:\t{self.author} <{self.email}>\nTime:\t{self.time}\n\t{self.msg}\nDiff:\t+{self.sloc_added} -{self.sloc_removed}"
+        return f"commit {self.commit_hash}\nAuthor:\t{self.author} <{self.email}>\nTime:\t{self.time}\nDiff:\t+{self.sloc_added} -{self.sloc_removed}\n\t{self.msg}"
 
     # static method to process commits
     #def process_commits():
@@ -33,6 +33,7 @@ class Repo:
         self.name = name
         self.commits = commits
         self.path = path
+        self.sloc_total = 0
 
     def append_commit(self, commit: Commit):
         self.commits.append(commit)
@@ -42,7 +43,7 @@ class Repo:
             print(c)
 
     def __repr__(self):
-        return f"Name: {self.name}\nPath: '{self.path}'\nCommits: {len(self.commits)}"
+        return f"Name: {self.name}\nPath: '{self.path}'\nCommits: {len(self.commits)}\nTotal sloc: {self.sloc_total}"
 
 # def line_diffs
 
@@ -85,6 +86,7 @@ def main():
         ))
 
     repo.log()
+    print()
     print(repo)
 
 if __name__ == "__main__":

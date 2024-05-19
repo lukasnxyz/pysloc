@@ -23,10 +23,10 @@ class Commit:
 
     def __repr__(self):
         return (f"commit {self.commit_hash}\n" +
-        f"Author:\t{self.author} <{self.email}>\n" +
-        f"Time:\t{self.time}\n" +
-        f"Diff:\t+{self.sloc_added} -{self.sloc_removed}\n" +
-        f"\t{self.msg}")
+                f"Author:\t{self.author} <{self.email}>\n" +
+                f"Time:\t{self.time}\n" +
+                f"Diff:\t+{self.sloc_added} -{self.sloc_removed}\n" +
+                f"\t{self.msg}")
 
 class Repo:
     def __init__(self, name: str, path: str, commits: []=[]):
@@ -44,9 +44,9 @@ class Repo:
 
     def __repr__(self):
         return (f"Repository: {self.name}\n" + 
-        f"Path: '{self.path}'\n" + 
-        f"Commits: {len(self.commits)}\n" + 
-        f"Total sloc: {self.sloc_total}\n")
+                f"Path: '{self.path}'\n" + 
+                f"Commits: {len(self.commits)}\n" + 
+                f"Total sloc: {self.sloc_total}\n")
 
 # def line_diffs
 
@@ -57,17 +57,15 @@ def main():
 
     pygit_repo = Repository(args.directory)
     pygit_repo_commits = []
+
     repo = Repo("pysloc", args.directory)
 
     for commit in pygit_repo.walk(pygit_repo.head.target, SortMode.TOPOLOGICAL | SortMode.REVERSE):
         pygit_repo_commits.append(commit)
 
-    # first loop needs to go from diff 0 to diff in init commit
-    #for commit, next_commit in zip(pygit_repo_commits, pygit_repo_commits[1:]+[pygit_repo_commits[0]]):
+    # prepend a commit with diff 0 t0 pygit_repo_commits
+
     for commit, next_commit in zip(pygit_repo_commits, pygit_repo_commits[1:]):
-        print(commit)
-        print(next_commit)
-        print()
         diff = pygit_repo.diff(commit, next_commit, context_lines=0, interhunk_lines=0) 
 
         sloc_added = 0
@@ -79,10 +77,8 @@ def main():
                     for line in hunk.lines:
                         if line.new_lineno == -1: 
                             sloc_removed += 1
-                            #print(f"[{Fore.RED}removal line {line.old_lineno}{Fore.RESET}] {line.content.strip()}")
                         if line.old_lineno == -1: 
                             sloc_added +=1
-                            #print(f"[{Fore.GREEN}addition line {line.new_lineno}{Fore.RESET}] {line.content.strip()}")  
 
         repo.append_commit(Commit(
             commit.message, 
@@ -90,7 +86,7 @@ def main():
             commit.hex,
             sloc_added,
             sloc_removed
-        ))
+            ))
 
     repo.log()
     print(repo)

@@ -4,8 +4,6 @@ from pygit2.enums import SortMode
 from datetime import datetime, timezone, timedelta
 from argparse import ArgumentParser
 
-from colorama import Fore
-
 class Commit:
     def __init__(self, msg: str, author: Signature, commit_hash: str, sloc_added, sloc_removed):
         tzinfo = timezone(timedelta(minutes=author.offset))
@@ -37,6 +35,9 @@ class Repo:
 
     def append_commit(self, commit: Commit):
         self.commits.append(commit)
+    
+    def update_sloc_total(self, sloc_added: int, sloc_removed: int):
+        self.sloc_total += sloc_added - sloc_removed
 
     def log(self):
         for c in self.commits:
@@ -47,8 +48,6 @@ class Repo:
                 f"Path: '{self.path}'\n" + 
                 f"Commits: {len(self.commits)}\n" + 
                 f"Total sloc: {self.sloc_total}\n")
-
-# def line_diffs
 
 def main():
     arg_parser = ArgumentParser()
@@ -63,8 +62,7 @@ def main():
     for commit in pygit_repo.walk(pygit_repo.head.target, SortMode.TOPOLOGICAL | SortMode.REVERSE):
         pygit_repo_commits.append(commit)
 
-    # prepend a commit with diff 0 t0 pygit_repo_commits
-
+    # first commit is missing here, but works in theory
     for commit, next_commit in zip(pygit_repo_commits, pygit_repo_commits[1:]):
         diff = pygit_repo.diff(commit, next_commit, context_lines=0, interhunk_lines=0) 
 
@@ -80,13 +78,14 @@ def main():
                         if line.old_lineno == -1: 
                             sloc_added +=1
 
+        repo.update_sloc_total(sloc_added, sloc_removed)
         repo.append_commit(Commit(
-            commit.message, 
-            commit.author, 
-            commit.hex,
+            next_commit.message, 
+            next_commit.author, 
+            next_commit.hex,
             sloc_added,
             sloc_removed
-            ))
+        ))
 
     repo.log()
     print(repo)

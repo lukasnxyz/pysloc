@@ -17,7 +17,10 @@ class Commit:
 
         self.sloc_added = sloc_added
         self.sloc_removed = sloc_removed
-        self.sloc_diff = abs(self.sloc_added - self.sloc_removed)
+        #self.sloc_diff = abs(self.sloc_added - self.sloc_removed)
+        #self.sloc_diff = self.sloc_added - self.sloc_removed
+
+        self.sloc = 0
 
     def __repr__(self):
         return (f"commit {self.commit_hash}\n" +
@@ -36,8 +39,9 @@ class Repo:
     def append_commit(self, commit: Commit):
         self.commits.append(commit)
     
-    def update_sloc_total(self, sloc_added: int, sloc_removed: int):
+    def update_sloc_total(self, sloc_added: int, sloc_removed: int, commit: Commit):
         self.sloc_total += sloc_added - sloc_removed
+        commit.sloc = self.sloc_total
 
     def log(self):
         for c in self.commits:
@@ -78,7 +82,6 @@ def main():
                         if line.old_lineno == -1: 
                             sloc_added +=1
 
-        repo.update_sloc_total(sloc_added, sloc_removed)
         repo.append_commit(Commit(
             next_commit.message, 
             next_commit.author, 
@@ -86,9 +89,20 @@ def main():
             sloc_added,
             sloc_removed
         ))
+        repo.update_sloc_total(sloc_added, sloc_removed, repo.commits[-1])
 
-    repo.log()
+    diffs = []
+    for c in repo.commits:
+        diffs.append(c.sloc)
+
+    #repo.log()
     print(repo)
+
+    import matplotlib.pyplot as plt
+    plt.plot(diffs)
+    plt.xlabel("commits")
+    plt.ylabel("diff")
+    plt.show()
 
 if __name__ == "__main__":
     main()

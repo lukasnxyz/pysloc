@@ -21,5 +21,5 @@ python3 pysloc.py -d "dir/of/git/repo"
 If you want to install pysloc to your system, ...
 
 #### Todo/ideas
-* Generate graph
+* Generate graph (html and png)
 * VSCode/Neovim integration

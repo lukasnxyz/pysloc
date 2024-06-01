@@ -15,12 +15,9 @@ class Commit:
         self.commit_hash = commit_hash
         self.time = dt.strftime("%c %z")
 
+        self.sloc = 0
         self.sloc_added = sloc_added
         self.sloc_removed = sloc_removed
-        #self.sloc_diff = abs(self.sloc_added - self.sloc_removed)
-        #self.sloc_diff = self.sloc_added - self.sloc_removed
-
-        self.sloc = 0
 
     def __repr__(self):
         return (f"commit {self.commit_hash}\n" +
@@ -35,12 +32,14 @@ class Repo:
         self.commits = commits
         self.path = path
         self.sloc_total = 0
+        self.sloc_diffs = []
 
     def append_commit(self, commit: Commit):
         self.commits.append(commit)
     
-    def update_sloc_total(self, sloc_added: int, sloc_removed: int, commit: Commit):
+    def update_sloc(self, sloc_added: int, sloc_removed: int, commit: Commit):
         self.sloc_total += sloc_added - sloc_removed
+        self.sloc_diffs.append(self.sloc_total)
         commit.sloc = self.sloc_total
 
     def log(self):
@@ -52,6 +51,14 @@ class Repo:
                 f"Path: '{self.path}'\n" + 
                 f"Commits: {len(self.commits)}\n" + 
                 f"Total sloc: {self.sloc_total}\n")
+
+def plot_diffs(diffs: []):
+    import matplotlib.pyplot as plt
+    plt.plot(diffs)
+    plt.xlabel("commits")
+    plt.ylabel("diff")
+    plt.show()
+
 
 def main():
     arg_parser = ArgumentParser()
@@ -82,27 +89,16 @@ def main():
                         if line.old_lineno == -1: 
                             sloc_added +=1
 
-        repo.append_commit(Commit(
-            next_commit.message, 
-            next_commit.author, 
-            next_commit.hex,
-            sloc_added,
-            sloc_removed
-        ))
-        repo.update_sloc_total(sloc_added, sloc_removed, repo.commits[-1])
+        repo.append_commit(Commit(next_commit.message, 
+                                  next_commit.author, 
+                                  next_commit.hex,
+                                  sloc_added,
+                                  sloc_removed))
+        repo.update_sloc(sloc_added, sloc_removed, repo.commits[-1])
 
-    diffs = []
-    for c in repo.commits:
-        diffs.append(c.sloc)
-
-    #repo.log()
+    repo.log()
     print(repo)
-
-    import matplotlib.pyplot as plt
-    plt.plot(diffs)
-    plt.xlabel("commits")
-    plt.ylabel("diff")
-    plt.show()
+    plot_diffs(repo.sloc_diffs)
 
 if __name__ == "__main__":
     main()
